@@ -40,10 +40,6 @@ development, Groq deprecated the originally-used `llama-3.3-70b-versatile`
 model mid-build, which is exactly the kind of external dependency risk worth
 flagging — see Limitations below.
 
-## Video Demo
-
-[link to your demo video]
-
 ## Approach
 
 **Extraction.** Each PDF is parsed page-by-page (PyMuPDF), then grouped into
