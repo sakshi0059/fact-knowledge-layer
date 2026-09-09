@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Environment / secrets
+.env
+*.env
+
+# Storage (runtime data, not source)
+storage/facts.db
+storage/uploads/*.pdf
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
