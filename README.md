@@ -42,7 +42,7 @@ flagging — see Limitations below.
 
 ## Video Demo
 
-[Watch the demo video]([your-video-link-here](https://drive.google.com/file/d/1fifZWgEcfNW4rWAVvS_fZBYpEHuqRWfC/view?usp=sharing))
+[Watch the demo video](https://drive.google.com/file/d/1fifZWgEcfNW4rWAVvS_fZBYpEHuqRWfC/view?usp=sharing)
 
 ## Approach
 
