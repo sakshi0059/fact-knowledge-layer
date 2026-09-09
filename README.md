@@ -1,4 +1,4 @@
-# Ledger — a Fact Knowledge Layer
+# Ledger: a Fact Knowledge Layer
 
 Extracts facts from PDFs, grounds every fact in its source evidence, and finds
 where facts across documents corroborate, contradict, or can be reconciled
