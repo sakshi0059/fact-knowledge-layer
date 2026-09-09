@@ -9,7 +9,7 @@ through context (different time periods, scopes, or units).
 Requirements: Python 3.10+, a free [Groq](https://console.groq.com) API key.
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/sakshi0059/fact-knowledge-layer
 cd fact-knowledge-layer
 
 python -m venv venv
@@ -34,7 +34,7 @@ The whole app is a single FastAPI server + a static HTML/JS frontend it
 serves directly — no separate frontend build step, no external database
 (SQLite file at `storage/facts.db`, created automatically).
 
-**Note on the LLM model:** this project uses Groq's `openai/gpt-oss-120b`
+**Note on the LLM model:** this project uses Groq's `openai/gpt-oss-20b`
 model (configurable via the `GROQ_MODEL` environment variable). During
 development, Groq deprecated the originally-used `llama-3.3-70b-versatile`
 model mid-build, which is exactly the kind of external dependency risk worth
@@ -45,6 +45,45 @@ flagging — see Limitations below.
 [Watch the demo video](https://drive.google.com/file/d/1fifZWgEcfNW4rWAVvS_fZBYpEHuqRWfC/view?usp=sharing)
 
 ## Approach
+
+### Architecture
+
+```mermaid
+flowchart TD
+    A[PDF Upload] --> B[FastAPI Backend]
+    B --> C[PyMuPDF PDF Extraction]
+    C --> D[3-Page Chunking]
+
+    D --> E[Groq LLM<br/>openai/gpt-oss-20b]
+    E --> F[Structured Fact Extraction]
+
+    F --> G{Evidence Grounding}
+    G -->|Valid Evidence| H[Store Fact]
+    G -->|Invalid Evidence| I[Extraction Issues]
+
+    H --> J[(SQLite<br/>storage/facts.db)]
+
+    J --> K[Fact Matching]
+    K --> L[Local Hashing Embeddings]
+    L --> M[Cosine Similarity<br/>+ Metric / Keyword Matching]
+
+    M --> N[Top Candidate Fact Pairs]
+    N --> O[Groq LLM<br/>Relationship Judgment]
+
+    O --> P[Corroborates]
+    O --> Q[Contradicts]
+    O --> R[Reconcilable]
+    O --> S[Unrelated]
+
+    J --> B
+    I --> B
+    P --> B
+    Q --> B
+    R --> B
+
+    B --> T[HTML / CSS / JavaScript Frontend]
+    T --> U[Browser UI]
+```
 
 **Extraction.** Each PDF is parsed page-by-page (PyMuPDF), then grouped into
 3-page chunks and sent to an LLM with a prompt asking it to pull out specific,
@@ -83,11 +122,18 @@ citing the specific values/periods/scopes involved.
 for anything else the model decides is relevant. Nothing about the schema
 assumes a particular document type or domain.
 
-**AI tools used.** Claude (Anthropic) for the full build — schema design,
-extraction/comparison prompts, the matching pipeline, debugging, and the
-frontend. Llama-family models via Groq (specifically `openai/gpt-oss-120b`,
-after `llama-3.3-70b-versatile` was deprecated mid-build) are the runtime LLM
-used by the deployed app itself for extraction and fact comparison.
+**AI tools used.** I used Claude (Anthropic) throughout the build for
+architecture design, generating and iterating on the extraction/comparison
+prompts, and implementing the FastAPI backend, matching pipeline, and
+frontend. I directed the overall design (schema choices, matching strategy,
+grounding approach), diagnosed and fixed real issues as they came up during
+testing — a mid-build model deprecation (`llama-3.3-70b-versatile` →
+`openai/gpt-oss-20b`), a free-tier rate-limit crash, and a matching threshold
+that initially surfaced zero cross-document relationships — and verified the
+four required cases against the actual extracted data rather than accepting
+the first output. Llama-family models via Groq (`openai/gpt-oss-20b`) are the
+runtime LLM used by the deployed app itself for extraction and fact
+comparison.
 
 ## The Four Required Cases
 
@@ -164,7 +210,7 @@ Issues" tab of the UI:
 
 Built iteratively with real debugging along the way: an initial LLM model
 choice (`llama-3.3-70b-versatile`) was deprecated by Groq mid-build and had
-to be swapped for `openai/gpt-oss-120b`; a real rate-limit crash on a large
+to be swapped for `openai/gpt-oss-20b`; a real rate-limit crash on a large
 PDF led to adding retry/backoff and pacing; and the matching threshold was
 tuned after an early run surfaced zero relationships due to overly strict
 similarity scoring. These are documented as real engineering decisions
